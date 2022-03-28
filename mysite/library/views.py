@@ -7,7 +7,7 @@ from django.db.models import Q
 
 class BookListView(generic.ListView):
     model = Book
-    paginate_by = 2
+    paginate_by = 5
     template_name = 'book_list.html'
 
 class BookDetailView(generic.DetailView):
