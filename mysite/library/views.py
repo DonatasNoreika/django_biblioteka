@@ -5,6 +5,7 @@ from django.views import generic
 
 class BookListView(generic.ListView):
     model = Book
+    paginate_by = 2
     template_name = 'book_list.html'
 
 class BookDetailView(generic.DetailView):
