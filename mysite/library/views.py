@@ -4,19 +4,24 @@ from .models import Book, Author, BookInstance, Genre
 from django.views import generic
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 
 class BookListView(generic.ListView):
     model = Book
     paginate_by = 5
     template_name = 'book_list.html'
 
+
 class BookDetailView(generic.DetailView):
     model = Book
     template_name = 'book_detail.html'
 
+
 def author(request, author_id):
     single_author = get_object_or_404(Author, pk=author_id)
     return render(request, 'author.html', {'author': single_author})
+
 
 def index(request):
     # Suskaičiuokime keletą pagrindinių objektų
@@ -56,7 +61,6 @@ def authors(request):
     return render(request, 'authors.html', context=context)
 
 
-
 def search(request):
     """
     paprasta paieška. query ima informaciją iš paieškos laukelio,
@@ -65,5 +69,15 @@ def search(request):
     didžiosios/mažosios.
     """
     query = request.GET.get('query')
-    search_results = Book.objects.filter(Q(title__icontains=query) | Q(summary__icontains=query) | Q(author__first_name__icontains=query) | Q(author__last_name__icontains=query))
+    search_results = Book.objects.filter(
+        Q(title__icontains=query) | Q(summary__icontains=query) | Q(author__first_name__icontains=query) | Q(
+            author__last_name__icontains=query))
     return render(request, 'search.html', {'books': search_results, 'query': query})
+
+
+class UserBookListView(LoginRequiredMixin, generic.ListView):
+    model = BookInstance
+    template_name = 'user_books.html'
+
+    def get_queryset(self):
+        return BookInstance.objects.filter(reader=self.request.user).order_by('due_back')

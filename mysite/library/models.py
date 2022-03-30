@@ -1,6 +1,8 @@
 from django.db import models
 from django.urls import reverse  # Papildome imports
-
+from django.contrib.auth.models import User
+from datetime import date
+from tinymce.models import HTMLField
 
 # Create your models here.
 
@@ -46,6 +48,13 @@ class BookInstance(models.Model):
     """Modelis, aprašantis konkrečios knygos kopijos būseną"""
     book = models.ForeignKey('Book', on_delete=models.SET_NULL, null=True)
     due_back = models.DateField('Bus prieinama', null=True, blank=True)
+    reader = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    @property
+    def is_overdue(self):
+        if self.due_back and date.today() > self.due_back:
+            return True
+        return False
 
     LOAN_STATUS = (
         ('a', 'Administruojama'),
@@ -75,7 +84,8 @@ class Author(models.Model):
     """Model representing an author."""
     first_name = models.CharField('Vardas', max_length=100)
     last_name = models.CharField('Pavardė', max_length=100)
-    description = models.TextField('Aprašymas', max_length=2000, default='')
+    # description = models.TextField('Aprašymas', max_length=2000, default='')
+    description = HTMLField()
 
     def display_books(self):
         return ', '.join(book.title for book in self.books.all()[:3])
