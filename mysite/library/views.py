@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, reverse
 from django.http import HttpResponse
 from .models import Book, Author, BookInstance, Genre
 from django.views import generic
@@ -9,6 +9,8 @@ from django.shortcuts import redirect
 from django.contrib.auth.forms import User
 from django.views.decorators.csrf import csrf_protect
 from django.contrib import messages
+from django.views.generic.edit import FormMixin
+from .forms import BookReviewForm
 
 class BookListView(generic.ListView):
     model = Book
@@ -16,9 +18,36 @@ class BookListView(generic.ListView):
     template_name = 'book_list.html'
 
 
-class BookDetailView(generic.DetailView):
+class BookDetailView(generic.DetailView, FormMixin):
     model = Book
     template_name = 'book_detail.html'
+    form_class = BookReviewForm
+
+    class Meta:
+        ordering = ['title']
+
+    def get_success_url(self):
+        return reverse('book-detail', kwargs={'pk': self.object.id})
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(BookDetailView, self).get_context_data(*args, **kwargs)
+        context['form'] = BookReviewForm(initial={'book': self.object})
+        return context
+
+    # standartinis post metodo perrašymas, naudojant FormMixin, galite kopijuoti tiesiai į savo projektą.
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+    def form_valid(self, form):
+        form.instance.book = self.object
+        form.instance.reviewer = self.request.user
+        form.save()
+        return super(BookDetailView, self).form_valid(form)
 
 
 def author(request, author_id):

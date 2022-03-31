@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from datetime import date
 from tinymce.models import HTMLField
 
+
 # Create your models here.
 
 class Genre(models.Model):
@@ -106,3 +107,8 @@ class Author(models.Model):
         return f'{self.last_name} {self.first_name}'
 
 
+class BookReview(models.Model):
+    book = models.ForeignKey('Book', on_delete=models.SET_NULL, related_name='reviews', null=True, blank=True)
+    reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    content = models.TextField('Atsiliepimas', max_length=2000)
