@@ -61,7 +61,7 @@
 <div class="container">
 {% if messages %}
     {% for message in messages %}
-        <div class="alert alert-danger" role="alert">
+        <div class="alert {{ message.tags }} alert-dismissible" role="alert">
             {{ message }}
         </div>
     {% endfor %}
