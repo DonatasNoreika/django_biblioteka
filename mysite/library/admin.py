@@ -2,7 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import Author, Genre, Book, BookInstance, BookReview
+from .models import Author, Genre, Book, BookInstance, BookReview, Profilis
 
 class BooksInstanceInline(admin.TabularInline):
     model = BookInstance
@@ -37,3 +37,4 @@ admin.site.register(Book, BookAdmin)
 admin.site.register(Author, AuthorAdmin)
 admin.site.register(Genre)
 admin.site.register(BookInstance, BookInstanceAdmin)
+admin.site.register(Profilis)

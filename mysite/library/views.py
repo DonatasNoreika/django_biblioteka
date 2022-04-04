@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.contrib import messages
 from django.views.generic.edit import FormMixin
 from .forms import BookReviewForm
+from django.contrib.auth.decorators import login_required
 
 class BookListView(generic.ListView):
     model = Book
@@ -142,3 +143,8 @@ def register(request):
             messages.error(request, 'Slaptažodžiai nesutampa!')
             return redirect('register')
     return render(request, 'registration/register.html')
+
+
+@login_required
+def profilis(request):
+    return render(request, 'profilis.html')
