@@ -12,6 +12,7 @@ from django.contrib import messages
 from django.views.generic.edit import FormMixin
 from .forms import BookReviewForm, UserUpdateForm, ProfilisUpdateForm
 from django.contrib.auth.decorators import login_required
+from django.utils.translation import gettext as _
 
 class BookListView(generic.ListView):
     model = Book
@@ -128,19 +129,19 @@ def register(request):
         if password == password2:
             # tikriname, ar neužimtas username
             if User.objects.filter(username=username).exists():
-                messages.error(request, f'Vartotojo vardas {username} užimtas!')
+                messages.error(request, _(f'Username {username} already exists!'))
                 return redirect('register')
             else:
                 # tikriname, ar nėra tokio pat email
                 if User.objects.filter(email=email).exists():
-                    messages.error(request, f'Vartotojas su el. paštu {email} jau užregistruotas!')
+                    messages.error(request, _(f'Email {email} already exists!'))
                     return redirect('register')
                 else:
                     # jeigu viskas tvarkoje, sukuriame naują vartotoją
                     User.objects.create_user(username=username, email=email, password=password)
                     return redirect('login')
         else:
-            messages.error(request, 'Slaptažodžiai nesutampa!')
+            messages.error(request, _('Passwords do not match!'))
             return redirect('register')
     return render(request, 'registration/register.html')
 
@@ -153,10 +154,10 @@ def profilis(request):
         if u_form.is_valid() and p_form.is_valid():
             u_form.save()
             p_form.save()
-            messages.success(request, f"Profilis atnaujintas")
+            messages.success(request, _('Profile updated!'))
             return redirect('profilis')
         else:
-            messages.error(request, f"Klaida")
+            messages.error(request, _('Error!'))
             return redirect('profilis')
     else:
         u_form = UserUpdateForm(instance=request.user)

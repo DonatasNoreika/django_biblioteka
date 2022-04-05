@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from datetime import date
 from tinymce.models import HTMLField
 from PIL import Image
-
+from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
 
@@ -21,13 +21,13 @@ class Genre(models.Model):
 
 class Book(models.Model):
     """Modelis reprezentuoja knygą (bet ne specifinę knygos kopiją)"""
-    title = models.CharField('Pavadinimas', max_length=200)
+    title = models.CharField(_('Title'), max_length=200)
     author = models.ForeignKey('Author', on_delete=models.SET_NULL, null=True, related_name='books')
-    summary = models.TextField('Aprašymas', max_length=1000, help_text='Trumpas knygos aprašymas')
+    summary = models.TextField(_('Summary'), max_length=1000, help_text=_('Short Summary'))
     isbn = models.CharField('ISBN', max_length=13,
                             help_text='13 Simbolių <a href="https://www.isbn-international.org/content/what-isbn">ISBN kodas</a>')
-    genre = models.ManyToManyField('Genre', help_text='Išrinkite žanrą(us) šiai knygai')
-    cover = models.ImageField('Viršelis', upload_to='covers', null=True)
+    genre = models.ManyToManyField('Genre', help_text=_('Choose Book Genge'))
+    cover = models.ImageField(_('Cover'), upload_to='covers', null=True)
 
     def __str__(self):
         return self.title
@@ -35,11 +35,11 @@ class Book(models.Model):
     def display_genre(self):
         return ', '.join(genre.name for genre in self.genre.all()[:3])
 
-    display_genre.short_description = 'Žanras'
+    display_genre.short_description = _('Genre')
 
     class Meta:
-        verbose_name = 'Book'
-        verbose_name_plural = 'Books'
+        verbose_name = _('Book')
+        verbose_name_plural = _('Books')
 
     def get_absolute_url(self):
         """Nurodo konkretaus aprašymo galinį adresą"""
