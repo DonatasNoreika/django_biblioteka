@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Mano paimta knyga:</h1>
+    <hr>
+        <ul>
+        <img class="img-thumbnail rounded w-75" src="{{book.book.cover.url}}">
+        <li><strong class="{% if book.is_overdue %}text-danger{% endif %}">Pavadinimas: {{book.book.title}}</strong></li>
+        <li><strong>Gražinimo terminas:</strong> {{book.due_back}}</li>
+        {% if book.reader == user %}
+        <div>
+            <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'my-book-update' book.id %}">Redaguoti</a>
+            <a class="btn btn-danger btn-sm mt-1 mb-1" href="{% url 'my-book-delete' book.id %}">Ištrinti</a>
+        </div>
+        {% endif %}
+            <p>{{book.book.summary}}</p>
+        <br/>
+      </li>
+    </ul>
+{% endblock %}

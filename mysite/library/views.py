@@ -1,7 +1,6 @@
 from django.shortcuts import render, get_object_or_404, reverse
 from django.http import HttpResponse
 from .models import Book, Author, BookInstance, Genre
-from django.views import generic
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -13,14 +12,21 @@ from django.views.generic.edit import FormMixin
 from .forms import BookReviewForm, UserUpdateForm, ProfilisUpdateForm
 from django.contrib.auth.decorators import login_required
 from django.utils.translation import gettext as _
+from django.contrib.auth.mixins import UserPassesTestMixin
+from django.views.generic import (ListView,
+                                  DetailView,
+                                  CreateView,
+                                  UpdateView,
+                                  DeleteView)
 
-class BookListView(generic.ListView):
+
+class BookListView(ListView):
     model = Book
     paginate_by = 5
     template_name = 'book_list.html'
 
 
-class BookDetailView(generic.DetailView, FormMixin):
+class BookDetailView(DetailView, FormMixin):
     model = Book
     template_name = 'book_detail.html'
     form_class = BookReviewForm
@@ -109,7 +115,7 @@ def search(request):
     return render(request, 'search.html', {'books': search_results, 'query': query})
 
 
-class UserBookListView(LoginRequiredMixin, generic.ListView):
+class UserBookListView(LoginRequiredMixin, ListView):
     model = BookInstance
     template_name = 'user_books.html'
 
@@ -168,3 +174,55 @@ def profilis(request):
         'p_form': p_form,
     }
     return render(request, 'profilis.html', context)
+
+
+class LoanedBooksByUserListView(LoginRequiredMixin, ListView):
+    model = BookInstance
+    context_object_name = 'books'
+    template_name = 'user_books.html'
+    paginate_by = 10
+
+    def get_queryset(self):
+        return BookInstance.objects.filter(reader=self.request.user).order_by('due_back')
+
+
+class BookByUserDetailView(LoginRequiredMixin, DetailView):
+    model = BookInstance
+    template_name = 'user_book.html'
+    context_object_name = 'book'
+
+
+class BookByUserCreateView(LoginRequiredMixin, CreateView):
+    model = BookInstance
+    fields = ['book', 'due_back']
+    success_url = "/library/mybooks/"
+    template_name = 'user_book_form.html'
+
+    def form_valid(self, form):
+        form.instance.reader = self.request.user
+        return super().form_valid(form)
+
+class BookByUserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = BookInstance
+    fields = ['book', 'due_back']
+    # success_url = "/library/mybooks/"
+    template_name = 'user_book_form.html'
+
+    def form_valid(self, form):
+        form.instance.reader = self.request.user
+        return super().form_valid(form)
+
+    def test_func(self):
+        book = self.get_object()
+        return self.request.user == book.reader
+
+
+class BookByUserDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = BookInstance
+    success_url = "/library/mybooks/"
+    template_name = 'user_book_delete.html'
+    context_object_name = 'book'
+
+    def test_func(self):
+        book = self.get_object()
+        return self.request.user == book.reader
